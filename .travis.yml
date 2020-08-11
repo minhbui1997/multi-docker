@@ -1,0 +1,22 @@
+language: generic
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t minhbh/react-test -f ./client/Dockerfile.dev ./client
+script:
+    - docker run -e CI=true minhbh/react-test npm test
+
+after_success:
+    - docker build -t minhbh/multi-client ./client
+    - docker build -t minhbh/multi-nginx ./nginx
+    - docker build -t minhbh/multi-server ./server
+    - docker build -t minhbh/multi-worker ./worker
+    # docker login
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push minhbh/multi-client
+    - docker push minhbh/multi-nginx
+    - docker push minhbh/multi-server
+    - docker push minhbh/multi-worker
+    
